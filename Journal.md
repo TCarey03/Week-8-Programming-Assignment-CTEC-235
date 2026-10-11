@@ -11,3 +11,21 @@ I used Navigator.push() with MaterialPageRoute to navigate from Mission Control 
 Journal Prompt: How does the navigation stack metaphor describe what happens in memory when a user navigates to DockingBay and then taps Return?**
 
 The navigation stack works like a stack of screens. Mission Control is the first screen. When the user taps Enter Docking Bay, the Docking Bay screen is pushed onto the stack above Mission Control. When the user taps Return to Control, Navigator.pop(context) removes the Docking Bay route, revealing Mission Control again. This lets the app return to the previous screen without creating a new Mission Control screen.
+
+-------------------------
+
+Phase 2: The Planetary Database
+
+Implementation
+
+I created a Planet class with three final fields: name, type, and description. I added a const constructor to make the planet records immutable. I also created a PlanetCatalog class with a static const list containing five planets.
+
+I replaced the Mission Control button with a ListView.builder. Each planet appears in a ListTile showing its name and type. When a user taps a planet, Navigator.push() opens PlanetDetail and passes the selected Planet object through its constructor.
+
+Journal Prompt
+
+Why is ListView.builder preferred over a basic ListView or Column? Explain how data is transferred from PlanetCatalog to PlanetDetail.
+
+ListView.builder is preferred for larger collections because it builds list items as they are needed instead of creating every item at once. This can improve performance and reduce unnecessary widget creation. A Column or a ListView with a predefined children list creates the widgets in advance.
+
+The data is transferred by retrieving a Planet object from PlanetCatalog.planets using its index. When the user taps its ListTile, the app passes that object to PlanetDetail using PlanetDetail(planet: planet). The detail screen stores it in its final planet field and uses it to display the name, type, and description.
