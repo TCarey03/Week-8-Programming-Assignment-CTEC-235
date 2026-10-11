@@ -45,3 +45,25 @@ Journal Prompt
 Explain the flow of data in this round-trip navigation. How does MissionControl know when the user has returned from PlanetDetail, and how is the specific return value captured?
 
 MissionControl uses Navigator.push() to open PlanetDetail. The navigation call returns a Future that completes when the detail screen closes. Using await allows MissionControl to capture the returned value in the result variable. PlanetDetail sends the confirmation message through Navigator.pop(context, 'You visited ${planet.name}!'). MissionControl then checks that the result is not null and displays it in a SnackBar. The context.mounted check ensures that the widget is still active before showing the message.
+
+------------------
+
+Phase 4: Mission Command Center
+
+Implementation
+
+I added the go_router package and configured a GoRouter instance with routes for Mission Control, the Docking Bay, and planet details. I replaced MaterialApp with MaterialApp.router.
+
+The planet detail route uses /planet/:id. Mission Control passes the selected planet's index through the URL, and the router uses that index to retrieve the correct planet from PlanetCatalog.
+
+I added a navigation drawer with destinations for Mission Control and the Docking Bay. I used context.go() for drawer navigation and returning from the Docking Bay. I used context.push() for planet details so that the previous screen remains available and can receive the visit confirmation.
+
+I also added a fallback screen for invalid planet IDs.
+
+Journal Prompt
+
+Contrast imperative navigation (Navigator.push) with declarative routing (context.go and GoRouter). How do URL routes make mobile applications more versatile?
+
+Imperative navigation uses commands such as Navigator.push() and Navigator.pop() to add or remove screens from the navigation stack. Declarative routing uses a central router to define which screen corresponds to a particular route.
+
+URLs such as /planet/1 identify a particular destination and allow parameters to determine which data appears. This makes the app easier to organize and supports features such as deep linking and browser navigation in Flutter Web. context.push() also allows a detail page to return data to the previous screen.
