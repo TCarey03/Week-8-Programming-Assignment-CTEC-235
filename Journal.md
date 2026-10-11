@@ -67,3 +67,13 @@ Contrast imperative navigation (Navigator.push) with declarative routing (contex
 Imperative navigation uses commands such as Navigator.push() and Navigator.pop() to add or remove screens from the navigation stack. Declarative routing uses a central router to define which screen corresponds to a particular route.
 
 URLs such as /planet/1 identify a particular destination and allow parameters to determine which data appears. This makes the app easier to organize and supports features such as deep linking and browser navigation in Flutter Web. context.push() also allows a detail page to return data to the previous screen.
+
+------------------------
+
+Phase 5: Validation & Reflection
+
+Testing Performed
+
+I tested the Cosmic Explorer App to verify its navigation, planet catalog, detail screens, visit confirmation, and navigation drawer.
+
+I checked that the planet detail routes use their URL parameters to display the correct planet. I also tested returning from planet details, displaying visit confirmation messages, navigating to the Docking Bay, and handling an invalid planet ID.
