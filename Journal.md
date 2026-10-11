@@ -29,3 +29,19 @@ Why is ListView.builder preferred over a basic ListView or Column? Explain how d
 ListView.builder is preferred for larger collections because it builds list items as they are needed instead of creating every item at once. This can improve performance and reduce unnecessary widget creation. A Column or a ListView with a predefined children list creates the widgets in advance.
 
 The data is transferred by retrieving a Planet object from PlanetCatalog.planets using its index. When the user taps its ListTile, the app passes that object to PlanetDetail using PlanetDetail(planet: planet). The detail screen stores it in its final planet field and uses it to display the name, type, and description.
+
+-----------------------
+
+Phase 3: The Observation Log
+
+Implementation
+
+I added a Confirm Visit button to the PlanetDetail screen. When the user taps it, Navigator.pop() closes the detail screen and returns a confirmation string containing the planet's name.
+
+I updated the MissionControl onTap handler to be asynchronous. It uses await Navigator.push<String>() to wait for the result. After checking context.mounted, the app displays the returned message using a SnackBar.
+
+Journal Prompt
+
+Explain the flow of data in this round-trip navigation. How does MissionControl know when the user has returned from PlanetDetail, and how is the specific return value captured?
+
+MissionControl uses Navigator.push() to open PlanetDetail. The navigation call returns a Future that completes when the detail screen closes. Using await allows MissionControl to capture the returned value in the result variable. PlanetDetail sends the confirmation message through Navigator.pop(context, 'You visited ${planet.name}!'). MissionControl then checks that the result is not null and displays it in a SnackBar. The context.mounted check ensures that the widget is still active before showing the message.
