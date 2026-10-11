@@ -4,7 +4,7 @@ void main() {
   runApp(const CosmicExplorerApp());
 }
 
-// PHASE 2: Planet data model
+// Phase 2: Planet data model
 class Planet {
   final String name;
   final String type;
@@ -17,7 +17,7 @@ class Planet {
   });
 }
 
-// PHASE 2: Central catalog containing exactly five planets
+// Phase 2: Catalog containing exactly five planets
 class PlanetCatalog {
   static const List<Planet> planets = [
     Planet(
@@ -62,7 +62,7 @@ class PlanetCatalog {
   ];
 }
 
-// Application entry widget
+// Application entry point
 class CosmicExplorerApp extends StatelessWidget {
   const CosmicExplorerApp({super.key});
 
@@ -75,7 +75,7 @@ class CosmicExplorerApp extends StatelessWidget {
   }
 }
 
-// Main screen displaying the planetary catalog
+// Mission Control: displays the planetary catalog
 class MissionControl extends StatelessWidget {
   const MissionControl({super.key});
 
@@ -95,13 +95,28 @@ class MissionControl extends StatelessWidget {
             title: Text(planet.name),
             subtitle: Text(planet.type),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              // Open PlanetDetail and wait for a return value.
+              final result = await Navigator.push<String>(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PlanetDetail(planet: planet),
+                  builder: (context) => PlanetDetail(
+                    planet: planet,
+                  ),
                 ),
               );
+
+              // Check that the widget is still active.
+              if (!context.mounted) return;
+
+              // Display the returned confirmation message.
+              if (result != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(result),
+                  ),
+                );
+              }
             },
           );
         },
@@ -110,7 +125,7 @@ class MissionControl extends StatelessWidget {
   }
 }
 
-// Screen displaying the selected planet's information
+// Planet Detail: displays information about a selected planet
 class PlanetDetail extends StatelessWidget {
   final Planet planet;
 
@@ -144,6 +159,18 @@ class PlanetDetail extends StatelessWidget {
               planet.description,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
+            const SizedBox(height: 24),
+
+            // Phase 3: Return a visit confirmation.
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                  'You visited ${planet.name}!',
+                );
+              },
+              child: const Text('Confirm Visit'),
+            ),
           ],
         ),
       ),
@@ -151,7 +178,7 @@ class PlanetDetail extends StatelessWidget {
   }
 }
 
-// Retained from Phase 1 for use in later phases
+// Docking Bay: retained from Phase 1 for Phase 4
 class DockingBay extends StatelessWidget {
   const DockingBay({super.key});
 
