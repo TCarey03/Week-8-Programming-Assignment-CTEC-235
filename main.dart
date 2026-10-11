@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   runApp(const CosmicExplorerApp());
 }
 
-// Phase 2: Planet data model
+// PHASE 2: Planet data model
 class Planet {
   final String name;
   final String type;
@@ -17,50 +18,85 @@ class Planet {
   });
 }
 
-// Phase 2: Catalog containing exactly five planets
+// PHASE 2: Catalog containing five planets
 class PlanetCatalog {
   static const List<Planet> planets = [
     Planet(
       name: 'Mercury',
       type: 'Terrestrial',
       description:
-          'Mercury is the smallest planet in our solar system and the '
-          'closest planet to the Sun. It has a rocky surface and extreme '
-          'temperature changes.',
+          'Mercury is the smallest planet in our solar system '
+          'and the closest planet to the Sun. It has a rocky '
+          'surface and extreme temperature changes.',
     ),
     Planet(
       name: 'Mars',
       type: 'Terrestrial',
       description:
-          'Mars is known as the Red Planet because of its reddish surface. '
-          'Scientists study Mars for evidence of past water and the '
-          'possibility of ancient microbial life.',
+          'Mars is known as the Red Planet because of its '
+          'reddish surface. Scientists study Mars for evidence '
+          'of past water and possible ancient microbial life.',
     ),
     Planet(
       name: 'Jupiter',
       type: 'Gas Giant',
       description:
-          'Jupiter is the largest planet in our solar system. It is a gas '
-          'giant known for its Great Red Spot and many moons.',
+          'Jupiter is the largest planet in our solar system. '
+          'It is a gas giant known for its Great Red Spot '
+          'and many moons.',
     ),
     Planet(
       name: 'Kepler-186f',
       type: 'Terrestrial',
       description:
-          'Kepler-186f is an exoplanet orbiting a star smaller and cooler '
-          'than our Sun. It was one of the first Earth-size planets found '
-          'in its star’s habitable zone.',
+          'Kepler-186f is an exoplanet orbiting a star smaller '
+          'and cooler than our Sun. It was one of the first '
+          'Earth-size planets found in its star’s habitable zone.',
     ),
     Planet(
       name: 'Proxima Centauri b',
       type: 'Exoplanet',
       description:
-          'Proxima Centauri b is an exoplanet orbiting Proxima Centauri, '
-          'the closest known star to our solar system. Its conditions '
-          'for supporting life remain uncertain.',
+          'Proxima Centauri b is an exoplanet orbiting Proxima '
+          'Centauri, the closest known star to our solar system. '
+          'Its conditions for supporting life remain uncertain.',
     ),
   ];
 }
+
+// PHASE 4: Configure declarative routing
+final GoRouter myRouter = GoRouter(
+  initialLocation: '/',
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const MissionControl(),
+    ),
+    GoRoute(
+      path: '/docking-bay',
+      builder: (context, state) => const DockingBay(),
+    ),
+    GoRoute(
+      path: '/planet/:id',
+      builder: (context, state) {
+        final id = int.tryParse(
+          state.pathParameters['id'] ?? '',
+        );
+
+        // Handle invalid planet IDs safely.
+        if (id == null ||
+            id < 0 ||
+            id >= PlanetCatalog.planets.length) {
+          return const UnknownPlanetScreen();
+        }
+
+        final planet = PlanetCatalog.planets[id];
+
+        return PlanetDetail(planet: planet);
+      },
+    ),
+  ],
+);
 
 // Application entry point
 class CosmicExplorerApp extends StatelessWidget {
@@ -68,9 +104,9 @@ class CosmicExplorerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      home: MissionControl(),
+      routerConfig: myRouter,
     );
   }
 }
@@ -83,8 +119,52 @@ class MissionControl extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cosmic Explorer - Mission Control'),
+        title: const Text(
+          'Cosmic Explorer - Mission Control',
+        ),
       ),
+
+      // PHASE 4: Navigation drawer
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: Text(
+                  'IEA Command Systems',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Mission Control'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go('/');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.rocket_launch),
+              title: const Text('Docking Bay'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go('/docking-bay');
+              },
+            ),
+          ],
+        ),
+      ),
+
+      // PHASE 2 and 3: Planet list and returned messages
       body: ListView.builder(
         itemCount: PlanetCatalog.planets.length,
         itemBuilder: (context, index) {
@@ -95,21 +175,15 @@ class MissionControl extends StatelessWidget {
             title: Text(planet.name),
             subtitle: Text(planet.type),
             trailing: const Icon(Icons.chevron_right),
+
+            // PHASE 4: Navigate using a URL parameter.
             onTap: () async {
-              // Open PlanetDetail and wait for a return value.
-              final result = await Navigator.push<String>(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PlanetDetail(
-                    planet: planet,
-                  ),
-                ),
+              final result = await context.push<String>(
+                '/planet/$index',
               );
 
-              // Check that the widget is still active.
               if (!context.mounted) return;
 
-              // Display the returned confirmation message.
               if (result != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -125,7 +199,7 @@ class MissionControl extends StatelessWidget {
   }
 }
 
-// Planet Detail: displays information about a selected planet
+// Planet detail screen
 class PlanetDetail extends StatelessWidget {
   final Planet planet;
 
@@ -161,11 +235,10 @@ class PlanetDetail extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Phase 3: Return a visit confirmation.
+            // PHASE 3: Return a confirmation message.
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(
-                  context,
+                context.pop(
                   'You visited ${planet.name}!',
                 );
               },
@@ -178,7 +251,7 @@ class PlanetDetail extends StatelessWidget {
   }
 }
 
-// Docking Bay: retained from Phase 1 for Phase 4
+// Docking Bay: now uses declarative navigation
 class DockingBay extends StatelessWidget {
   const DockingBay({super.key});
 
@@ -191,9 +264,38 @@ class DockingBay extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () {
-            Navigator.pop(context);
+            context.go('/');
           },
           child: const Text('Return to Control'),
+        ),
+      ),
+    );
+  }
+}
+
+// Fallback screen for invalid planet IDs
+class UnknownPlanetScreen extends StatelessWidget {
+  const UnknownPlanetScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Planet Not Found'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'This planet is not in the mission catalog.',
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => context.go('/'),
+              child: const Text('Return to Mission Control'),
+            ),
+          ],
         ),
       ),
     );
